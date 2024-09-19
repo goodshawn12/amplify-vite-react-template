@@ -33,6 +33,10 @@ function App() {
         }
       }
     });
+    // Cleanup the subscription when the component unmounts
+    return () => {
+      subscription.unsubscribe();
+    };
   }, []); 
  
   function createPatientProfile() {
