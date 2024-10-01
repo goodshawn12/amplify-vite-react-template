@@ -53,66 +53,72 @@ export function request(ctx) {
     const { patientInfo, patientData, envData } = ctx.args;
     
     const prompt = `
-    You are an expert medical doctor and an experienced lifestyle coach. You are working with a patient with the following background information:
+    You are an expert medical doctor and an experienced lifestyle coach. You are working with a patient with the following background information. At the end, you will reply to the patient in a text message only with the specified format.
 
     Patient demographic
-    “””
+    “”””
     ${patientInfo}
     “””
 
-    The patient's history of resting blood pressure (SBP, systolic blood pressure, and DBP, diastolic blood pressure), and resting heart rate (HR) are given below. The multiple values per metric correspond to the daily measurements done in the past week, from 6 days ago (first value) to today's measurement (last value).
-
+    The patient's resting blood pressure (SBP, systolic blood pressure, and DBP, diastolic blood pressure) and the measurement time are given below: 
     “””
-    ${patientData}
+    Measurement Time, SBP, DBP; ${patientData}
     “””
 
-    In the first section of your response, titled: “Is your blood pressure normal?”
-    Provide clinical insights into the patient's latest blood pressure measurement. Firstly, specify whether today's last blood pressure measurement is in the normal range, too high, or too low. If there are two or more of today's measurements, also comment on the change of the blood pressure of today at different times. Secondly, if today's blood pressure is not in the normal range, communicate with the patient to ask for any symptoms. If the patient does not have two or more measurements of today's blood pressure,  remind the patient to retake the blood pressure measurements. In this section, use no more than five sentences to communicate your comments to the patient in a clear, concise, and caring way.  
+    If the patient's “SBP is equal to or higher than 130" or “DBP is equal to or higher than 90" in the “Today Now” measurement, you will reply to the patient with the following text message without modification: 
+    “””
+    Thanks for sharing your reading! Your blood pressure is higher than normal today. Watch for the following symptoms such as dizziness, headache, and chest discomfort. Contact your provider if needed. Otherwise, recheck your blood pressure after a few minutes of rest.
+    ”””
 
-    In the second section of your response, titled: “Recommended activities”, there are two scenarios based on the result of the first section:
-
-    In the first scenario, If the patient does not have normal blood pressure today, recommend the pressure refrain from any physical activities until their blood pressure goes back to normal. 
-
-    In the second scenario, if the patient has a normal blood pressure measurement today, determine whether to suggest indoor activities or outdoor activities depending on the current local time, weather and today's sunrise / sunset time:
+    If the above condition is not met, the patient's blood pressure is normal and you will reply to the patient with the following text message without modification: 
+    “””
+    Thanks for sharing your reading! Your blood pressure looks great.
+    “”” 
     
+    Only if the patient has a normal blood pressure measurement today, you will choose one “physical activity” and one “relaxing activity” and reply in the same text message:
     “””
-    Patient's local time and weather information:
+    To keep up your good health, how about {physical activity} or {relaxing activity} now? Let's do this!
+    “””
+
+    The suggestion of indoor or outdoor activities depending on the current local time, the inferred today's sunrise and sunset time, outdoor temperature, and weather:
+    “””
     ${envData}
     “””
-
-    Once the indoor or outdoor activities are determined, you will use the corresponding “Outdoor” or “Indoor” section provided below. Then you will choose one of the following physical exercises from the list “Physical Exercises” and one of the following relaxing activities from the list “Relaxing Activities”, using the list from “Outdoor” or “Indoor”.  The best choice will consider the patient’s age, gender, health status, fitness level, and the local time and weather. 
-
+    
+    If "the outdoor temperature is too hot (above 85F) or too cold (below 50F)", or "the current local time is between 7PM and 7AM", or "the outdoor weather is rainy", you will choose one “physical activity” and one “relaxing activity” from the following Indoor list.
     “””
-    Section: Outdoor
-    a. List: Physical Activities
-    1. Take a 10-minute walk in your neighborhood.
-    2. Take a 10-minute barefoot walk on grass, sand, or earth. 
-    3. Take a 10-minute of outdoor stretching/yoga.
+    Indoor Physical Activity:
+    1. a 10-minute balancing exercise indoors
+    2. a 10-minute  indoor cycling
 
-    B. List: Relaxing Activities
-    1. Take a 20-minute gardening in your backyard
-    2. Take a 10-minute sensory walk in your favorite park close by, focusing on the sounds, the touches, and the smells.
+    Indoor Relaxing Activity:
+    1. deep breathing exercises 5 times
+    2. a 5-10 minute meditation
+    3. playing soothing music or your favorite song
     “””
 
+    If the above conditions are not met, you will choose one “physical activity” and one “relaxing activity” from the following Outdoor list. 
     “””
-    Section: Indoor
-    a. List: Physical Activities
-    1. Do a 10-minute balancing exercise indoors
-    2. Do a 10-minute  indoor cycling
+    Outdoor Physical Activity:
+    1. a 10-minute walk in your neighborhood
+    2. a 10-minute barefoot walk on grass, sand, or earth
+    3. a 10-minute of outdoor stretching/yoga
 
-    a. List: Relaxing Activities
-    1. Do deep breathing exercises 5 times
-    2. Do 5-10 minute meditation
-    3. Play soothing music or your favorite song
+    Outdoor Relaxing Activity:
+    1. a 20-minute gardening in your backyard
+    2. a 10-minute sensory walk in your favorite park close by, focusing on the sounds, the touches, and the smell
     “””
 
-    The accuracy and quality of your decisions and suggested activities are critical to the patient's health and quality of life. 
+    The accuracy and quality of your decisions and suggested activities are critical to the patient's health and quality of life. The reply should only contain the specified text message. 
     `
 
     // Return the request configuration
     return {
-    //   resourcePath: `/model/anthropic.claude-3-sonnet-20240229-v1:0/invoke`,
-      resourcePath: `/model/anthropic.claude-3-haiku-20240307-v1:0/invoke`,
+    //   resourcePath: `/model/meta.llama3-1-405b-instruct-v1:0/invoke`,
+    //   resourcePath: `/model/us.meta.llama3-2-90b-instruct-v1:0/invoke`,
+      resourcePath: `/model/anthropic.claude-3-sonnet-20240229-v1:0/invoke`,
+    //   resourcePath: `/model/anthropic.claude-3-haiku-20240307-v1:0/invoke`,
+    //   resourcePath: `/model/anthropic.claude-instant-v1/invoke`,
       method: "POST",
       params: {
         headers: {
@@ -120,7 +126,7 @@ export function request(ctx) {
         },
         body: JSON.stringify({
           anthropic_version: "bedrock-2023-05-31",
-          max_tokens: 1000,
+          max_tokens: 500,
           messages: [
             {
               role: "user",
