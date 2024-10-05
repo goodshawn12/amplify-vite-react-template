@@ -7,19 +7,6 @@ specifies that any user authenticated via an API key can "create", "read",
 "update", and "delete" any "Todo" records.
 =========================================================================*/
 const schema = a.schema({
-  // PatientInfo: a
-  //   .model({
-  //     patientInfo: a.string(),
-  //     patientData: a.string(),
-  //   })
-  //   .authorization((allow) => [allow.publicApiKey()]),
-    
-  // Todo: a
-  //   .model({
-  //     content: a.string(),
-  //   })
-  //   .authorization((allow) => [allow.publicApiKey()]),
-
   BedrockResponse: a.customType({
     body: a.string(),
     error: a.string(),
@@ -32,7 +19,6 @@ const schema = a.schema({
       patientData: a.string(),
       weatherData: a.string(),
      })
-    // .arguments({ ingredients: a.string().array() })
     .returns(a.ref("BedrockResponse"))
     .authorization((allow) => [allow.authenticated()])
     .handler(

@@ -19,34 +19,60 @@ function App() {
   const [result, setResult] = useState<string>("");
   const [loading, setLoading] = useState(false);
 
+  function toEpochTimestamp(dateTime: any) {
+    const date = new Date(dateTime);
+    const epochTimestamp = Math.floor(date.getTime() / 1000);
+    return epochTimestamp;
+  }
+
   const onSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setLoading(true);
 
     // OpenWeatherMap API
-    const getWeather = async () => {
-      const lat = 32.7157;
-      const lon = -117.1611;
-      const timeStamp = 1728090914;
+    const getWeather = async (dateTime: any, cityName: any) => {
+
+      const limit = 1;
+      const geoApiUrl = `http://api.openweathermap.org/geo/1.0/direct?q=${cityName}&limit=${limit}&appid=${apiKey}`;
+      let lat: number | null = null;
+      let lon: number | null = null;
+      
+      try {
+        const response = await fetch(geoApiUrl);
+        const data = await response.json();
+        console.log(data);
+        lat = data[0].lat;
+        lon = data[0].lon;
+      } catch (error) {
+        console.error('Error fetching Geo coordinates:', error);
+      }
+      if (lat === null || lon === null) {
+        console.error(`Error: Unable to fetch weather data due to missing coordinates. Use San Diego's coordinates as default.`);
+        lat = 32.7157;
+        lon = -117.1611;
+      }
+
+      const timeStamp = toEpochTimestamp(dateTime);
       const apiUrl = `https://api.openweathermap.org/data/3.0/onecall/timemachine?lat=${lat}&lon=${lon}&dt=${timeStamp}&appid=${apiKey}&units=imperial`;
-      // const part = `minutely,hourly,daily,alerts`;
-      // const apiUrl = `https://api.openweathermap.org/data/3.0/onecall?lat=${lat}&lon=${lon}&exclude=${part}&appid=${apiKey}&units=imperial`;
       try {
         const response = await fetch(apiUrl);
         const data = await response.json();
         const dataCurrent = data.data[0];
         const temperature = dataCurrent.temp;
-        const sunrise = dataCurrent.sunrise;
-        const sunset = dataCurrent.sunset;
+        const timeZoneOffset = data.timezone_offset;
+        const currentTime = new Date(dataCurrent.dt * 1000 + timeZoneOffset * 1000).toISOString();
+        const sunrise = new Date(dataCurrent.sunrise * 1000 + timeZoneOffset * 1000).toISOString();
+        const sunset = new Date(dataCurrent.sunset * 1000 + timeZoneOffset * 1000).toISOString();
         const timeZone = data.timezone
         const uvi = dataCurrent.uvi;
         const weatherMain = dataCurrent.weather[0].main;
         const weatherMessage = `
+          Current Time: ${currentTime};
           Temperature: ${temperature}F; 
           Weather: ${weatherMain}; 
           UV Index: ${uvi}; 
-          Sunrise UTC Time: ${sunrise}; 
-          Sunset UTC time: ${sunset}; 
+          Sunrise Time: ${sunrise}; 
+          Sunset time: ${sunset}; 
           Time Zone: ${timeZone};
         `
         return weatherMessage
@@ -69,16 +95,16 @@ function App() {
       Diastolic Blood Pressure: ${formData.get("dataDBP")?.toString() || "80"};
       `
 
-      const location = formData.get("patientLoc")?.toString() || ""
-      const recordTime = `${formData.get("dataDate")?.toString() || ""} ${formData.get("dataTime")?.toString() || ""}`
+      const location = formData.get("patientLoc")?.toString() || "San Diego";
+      const recordDateTime = `${formData.get("dataDate")?.toString() || "2024-10-01"} ${formData.get("dataTime")?.toString() || "15:00:00+00"}`
 
-      const weatherMessage = await getWeather();
+      const weatherMessage = await getWeather(recordDateTime, location);
       setWeatherInfo(weatherMessage);
 
       console.log(patientInfo)
       console.log(patientData)
       console.log(location)
-      console.log(recordTime)
+      console.log(recordDateTime)
       console.log(weatherMessage)
 
       const { data, errors } = await amplifyClient.queries.askBedrock({
@@ -140,10 +166,10 @@ function App() {
             <input type="text" className="input-field" id="dataDBP" name="dataDBP" placeholder="80" />
 
             <div className="description-grid">Record Date</div>
-            <input type="text" className="input-field" id="dataDate" name="dataDate" placeholder="2024/10/01" />
+            <input type="text" className="input-field" id="dataDate" name="dataDate" placeholder="2024-10-01" />
 
             <div className="description-grid">Record Time</div>
-            <input type="text" className="input-field" id="dataTime" name="dataTime" placeholder="09:00:00" />
+            <input type="text" className="input-field" id="dataTime" name="dataTime" placeholder="15:00:00+00" />
           </div>
           <button type="submit" className="search-button">
             Generate

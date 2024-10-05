@@ -4,51 +4,7 @@
 // } from "@aws-sdk/client-bedrock-runtime";
 
 export function request(ctx) {
-    // const { ingredients = [] } = ctx.args;
-    // const client = new BedrockRuntimeClient({ region: "us-west-2" });
-    // const modelId = "meta.llama3-1-8b-instruct-v1:0";
-
-    // // Construct the prompt with the provided ingredients
-    // const userMessage = `Suggest a recipe idea using these ingredients: ${ingredients.join(", ")}.`;
-    
-    // // Embed the message in Llama 3's prompt format.
-    // const prompt = `
-    // <|begin_of_text|>
-    // <|start_header_id|>user<|end_header_id|>
-    // ${userMessage}
-    // <|eot_id|>
-    // <|start_header_id|>assistant<|end_header_id|>
-    // `;
-    
-    // // Format the request payload using the model's native structure.
-    // const userRequest = {
-    //     prompt,
-    //     max_gen_len: 512,
-    //     temperature: 0.5,
-    //     top_p: 0.9,
-    // };
-
-    // // Encode and send the request.
-    // const response = await client.send(
-    //     new InvokeModelCommand({
-    //       contentType: "application/json",
-    //       body: JSON.stringify(request),
-    //       modelId,
-    //     }),
-    //   );
-
-    // // Return the request configuration
-    // return {
-    //   resourcePath: `/model/meta.llama3-1-8b-instruct-v1:0/invoke`,
-    //   method: "POST",
-    //   params: {
-    //     headers: {
-    //       "Content-Type": "application/json",
-    //     },
-    //     body: JSON.stringify(userRequest),
-    //   },
-    // };
-
+ 
     // Construct the prompt with the provided ingredients
     const { patientInfo, patientData, weatherData } = ctx.args;
     
@@ -65,7 +21,7 @@ export function request(ctx) {
     ${patientData}
     “””
 
-    If the patient's “SBP is equal to or higher than 130" or “DBP is equal to or higher than 90" in the “Today Now” measurement, you will reply to the patient with the following text message without modification: 
+    If the patient's “SBP is equal to or higher than 130" or “DBP is equal to or higher than 90", you will reply to the patient with the following text message without modification: 
     “””
     Thanks for sharing your reading! Your blood pressure is higher than normal today. Watch for the following symptoms such as dizziness, headache, and chest discomfort. Contact your provider if needed. Otherwise, recheck your blood pressure after a few minutes of rest.
     ”””
@@ -80,12 +36,12 @@ export function request(ctx) {
     To keep up your good health, how about {physical activity} or {relaxing activity} now? Let's do this!
     “””
 
-    The suggestion of indoor or outdoor activities depending on the current local time, the inferred today's sunrise and sunset time, outdoor temperature, and weather:
+    The suggestion of indoor or outdoor activities depending on the current time, sunrise and sunset time, outdoor temperature, and weather:
     “””
     ${weatherData}
     “””
     
-    If the temperature is too hot (above 85F) or too cold (below 50F), or the current local time is between sunrise and sunset, or the weather is rainy, you will choose one “physical activity” and one “relaxing activity” from the following Indoor list.
+    If the temperature is too hot (above 85F) or too cold (below 50F), or the current local time is after sunset or before sunrise, or the UV Index is too high, or the weather is rainy, you will choose one “physical activity” and one “relaxing activity” from the following Indoor list.
     “””
     Indoor Physical Activity:
     1. a 10-minute balancing exercise indoors
@@ -114,11 +70,12 @@ export function request(ctx) {
 
     // Return the request configuration
     return {
+      resourcePath: `/model/anthropic.claude-3-sonnet-20240229-v1:0/invoke`,
+    //   resourcePath: `/model/anthropic.claude-3-haiku-20240307-v1:0/invoke`,
+    //   resourcePath: `/model/anthropic.claude-instant-v1/invoke`,
     //   resourcePath: `/model/meta.llama3-1-405b-instruct-v1:0/invoke`,
     //   resourcePath: `/model/us.meta.llama3-2-90b-instruct-v1:0/invoke`,
-    //   resourcePath: `/model/anthropic.claude-3-sonnet-20240229-v1:0/invoke`,
-      resourcePath: `/model/anthropic.claude-3-haiku-20240307-v1:0/invoke`,
-    //   resourcePath: `/model/anthropic.claude-instant-v1/invoke`,
+
       method: "POST",
       params: {
         headers: {
