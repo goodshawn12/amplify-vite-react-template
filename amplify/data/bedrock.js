@@ -50,7 +50,7 @@ export function request(ctx) {
     // };
 
     // Construct the prompt with the provided ingredients
-    const { patientInfo, patientData, envData } = ctx.args;
+    const { patientInfo, patientData, weatherData } = ctx.args;
     
     const prompt = `
     You are an expert medical doctor and an experienced lifestyle coach. You are working with a patient with the following background information. At the end, you will reply to the patient in a text message only with the specified format.
@@ -60,9 +60,9 @@ export function request(ctx) {
     ${patientInfo}
     “””
 
-    The patient's resting blood pressure (SBP, systolic blood pressure, and DBP, diastolic blood pressure) and the measurement time are given below: 
+    The patient's resting blood pressure (SBP, systolic blood pressure, and DBP, diastolic blood pressure) are given below: 
     “””
-    Measurement Time, SBP, DBP; ${patientData}
+    ${patientData}
     “””
 
     If the patient's “SBP is equal to or higher than 130" or “DBP is equal to or higher than 90" in the “Today Now” measurement, you will reply to the patient with the following text message without modification: 
@@ -82,10 +82,10 @@ export function request(ctx) {
 
     The suggestion of indoor or outdoor activities depending on the current local time, the inferred today's sunrise and sunset time, outdoor temperature, and weather:
     “””
-    ${envData}
+    ${weatherData}
     “””
     
-    If "the outdoor temperature is too hot (above 85F) or too cold (below 50F)", or "the current local time is between 7PM and 7AM", or "the outdoor weather is rainy", you will choose one “physical activity” and one “relaxing activity” from the following Indoor list.
+    If the temperature is too hot (above 85F) or too cold (below 50F), or the current local time is between sunrise and sunset, or the weather is rainy, you will choose one “physical activity” and one “relaxing activity” from the following Indoor list.
     “””
     Indoor Physical Activity:
     1. a 10-minute balancing exercise indoors
@@ -116,8 +116,8 @@ export function request(ctx) {
     return {
     //   resourcePath: `/model/meta.llama3-1-405b-instruct-v1:0/invoke`,
     //   resourcePath: `/model/us.meta.llama3-2-90b-instruct-v1:0/invoke`,
-      resourcePath: `/model/anthropic.claude-3-sonnet-20240229-v1:0/invoke`,
-    //   resourcePath: `/model/anthropic.claude-3-haiku-20240307-v1:0/invoke`,
+    //   resourcePath: `/model/anthropic.claude-3-sonnet-20240229-v1:0/invoke`,
+      resourcePath: `/model/anthropic.claude-3-haiku-20240307-v1:0/invoke`,
     //   resourcePath: `/model/anthropic.claude-instant-v1/invoke`,
       method: "POST",
       params: {

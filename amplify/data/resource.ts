@@ -30,7 +30,7 @@ const schema = a.schema({
     .arguments({ 
       patientInfo: a.string(),
       patientData: a.string(),
-      envData: a.string(),
+      weatherData: a.string(),
      })
     // .arguments({ ingredients: a.string().array() })
     .returns(a.ref("BedrockResponse"))

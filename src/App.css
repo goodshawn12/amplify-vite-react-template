@@ -73,7 +73,6 @@
 }
 
 .description {
-
   font-weight: 500;
   font-size: 1.125rem;
   max-width: 65ch;
@@ -138,4 +137,24 @@
   color: black;
   font-weight: bold;
   text-align: left; /* Align text to the left */
+}
+
+.grid-container {
+  display: grid;
+  grid-template-columns: auto 1fr auto 1fr; /* Two columns: description and input */
+  grid-template-rows: repeat(2, auto); /* Four rows for each pair */
+  gap: 10px; /* Space between grid items */
+  align-items: center; /* Center items vertically */
+}
+
+.description-grid {
+  /* grid-column: 1; /* Place in the first column */
+  font-weight: bold; /* Optional: make the description bold */
+  color: black;
+  text-align: right;
+}
+
+.input-field {
+  /* grid-column: 2; /* Place in the second column */
+  width: 100%; /* Make input fields take full width */
 }
