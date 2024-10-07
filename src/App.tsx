@@ -33,7 +33,7 @@ function App() {
     const getWeather = async (dateTime: any, cityName: any) => {
 
       const limit = 1;
-      const geoApiUrl = `http://api.openweathermap.org/geo/1.0/direct?q=${cityName}&limit=${limit}&appid=${apiKey}`;
+      const geoApiUrl = `https://api.openweathermap.org/geo/1.0/direct?q=${cityName}&limit=${limit}&appid=${apiKey}`;
       let lat: number | null = null;
       let lon: number | null = null;
       
