@@ -13,6 +13,10 @@ const amplifyClient = generateClient<Schema>({
   authMode: "userPool",
 });
 const apiKey = 'e08ec60aa69dc44b833afcf9d49deccc';
+// const apiKey = process.env.REACT_APP_WEATHER_API_KEY;
+// if (!apiKey) {
+//   console.error("Weather API Key is not found");
+// }
 
 function App() {
   const [weatherInfo, setWeatherInfo] = useState<string>("");
