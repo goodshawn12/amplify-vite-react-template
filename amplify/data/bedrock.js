@@ -7,7 +7,7 @@ export function request(ctx) {
  
     // Construct the prompt with the provided ingredients
     const { patientInfo, patientData, weatherData } = ctx.args;
-    
+
     const prompt = `
     You are an expert medical doctor and an experienced lifestyle coach. You are working with a patient with the following background information. At the end, you will reply to the patient in a text message only with the specified format.
 
@@ -15,23 +15,8 @@ export function request(ctx) {
     “”””
     ${patientInfo}
     “””
-
-    The patient's resting blood pressure (SBP, systolic blood pressure, and DBP, diastolic blood pressure) are given below: 
-    “””
-    ${patientData}
-    “””
-
-    If the patient's “SBP is equal to or higher than 130" or “DBP is equal to or higher than 90", you will reply to the patient with the following text message without modification: 
-    “””
-    Thanks for sharing your reading! Your blood pressure is higher than normal today. Watch for the following symptoms such as dizziness, headache, and chest discomfort. Contact your provider if needed. Otherwise, recheck your blood pressure after a few minutes of rest.
-    ”””
-
-    If the above condition is not met, the patient's blood pressure is normal and you will reply to the patient with the following text message without modification: 
-    “””
-    Thanks for sharing your reading! Your blood pressure looks great.
-    “”” 
     
-    Only if the patient has a normal blood pressure measurement today, you will choose one “physical activity” and one “relaxing activity” and reply in the same text message:
+    You will choose one “physical activity” and one “relaxing activity” and reply in the same text message:
     “””
     To keep up your good health, how about {physical activity} or {relaxing activity} now? Let's do this!
     “””
@@ -70,8 +55,8 @@ export function request(ctx) {
 
     // Return the request configuration
     return {
-      resourcePath: `/model/anthropic.claude-3-sonnet-20240229-v1:0/invoke`,
-    //   resourcePath: `/model/anthropic.claude-3-haiku-20240307-v1:0/invoke`,
+      // resourcePath: `/model/anthropic.claude-3-sonnet-20240229-v1:0/invoke`,
+      resourcePath: `/model/anthropic.claude-3-haiku-20240307-v1:0/invoke`,
     //   resourcePath: `/model/anthropic.claude-instant-v1/invoke`,
     //   resourcePath: `/model/meta.llama3-1-405b-instruct-v1:0/invoke`,
     //   resourcePath: `/model/us.meta.llama3-2-90b-instruct-v1:0/invoke`,

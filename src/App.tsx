@@ -29,6 +29,24 @@ function App() {
     return epochTimestamp;
   }
 
+  function assessBP(dataSBP: number, dataDBP: number): {isNormalBP: number, bpMessage: string} {
+    let isNormalBP: number;
+    let bpMessage: string;
+
+    if (dataSBP < 90 || dataDBP < 50) {
+      isNormalBP = 0;
+      bpMessage = `Thanks for sharing your reading! Your blood pressure readinig is abnormal today. If you haven't done so, could you recheck your blood pressure to ensure the reading is accurate? Thank you. `;
+    } else if (dataSBP >= 130 || dataDBP >= 90) {
+      isNormalBP = 0;
+      bpMessage = `Thanks for sharing your reading! Your blood pressure is higher than normal today. Watch for the following symptoms such as dizziness, headache, and chest discomfort. Contact your provider if needed. Otherwise, recheck your blood pressure after a few minutes of rest. `;
+    } else {
+      isNormalBP = 1;
+      bpMessage = `Thanks for sharing your reading! Your blood pressure looks great. `;
+    }
+
+    return { isNormalBP, bpMessage};
+  }
+
   const onSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setLoading(true);
@@ -87,41 +105,48 @@ function App() {
     }
 
     try {
+      // load information from user inputs
       const formData = new FormData(event.currentTarget);
-      
-      const patientInfo = `
-      Patient Name: ${formData.get("patientName")?.toString() || "Guest"}; 
-      Sex: ${formData.get("patientSex")?.toString() || "F"}; 
-      Age: ${formData.get("patientAge")?.toString() || "65"}; 
-      `
-      const patientData = `
-      Systolic Blood Pressure: ${formData.get("dataSBP")?.toString() || "120"}; 
-      Diastolic Blood Pressure: ${formData.get("dataDBP")?.toString() || "80"};
-      `
-
+      const patientName = formData.get("patientName")?.toString() || "Guest";
+      const patientSex = formData.get("patientSex")?.toString() || "F";
+      const patientAge = formData.get("patientAge")?.toString() || "65";
+      const dataSBP = formData.get("dataSBP")?.toString() || "120";
+      const dataDBP = formData.get("dataDBP")?.toString() || "80";
       const location = formData.get("patientLoc")?.toString() || "San Diego";
       const recordDateTime = `${formData.get("dataDate")?.toString() || "2024-10-01"} ${formData.get("dataTime")?.toString() || "15:00:00+00"}`
+
+      const patientInfo = `Sex: ${patientSex}; Age: ${patientAge};`
+      const headerMessage = `Dear ${patientName},\n`
+      const { isNormalBP, bpMessage } = assessBP(parseInt(dataSBP), parseInt(dataDBP));
+      // const patientData = `Systolic Blood Pressure: ${dataSBP}; Diastolic Blood Pressure: ${dataDBP};`
 
       const weatherMessage = await getWeather(recordDateTime, location);
       setWeatherInfo(weatherMessage);
 
       console.log(patientInfo)
-      console.log(patientData)
+      console.log(isNormalBP)
+      console.log(bpMessage)
       console.log(location)
       console.log(recordDateTime)
       console.log(weatherMessage)
 
-      const { data, errors } = await amplifyClient.queries.askBedrock({
-        patientInfo: patientInfo,
-        patientData: patientData,
-        weatherData: weatherMessage,
-      });
+      if (isNormalBP == 1) {
+        const { data, errors } = await amplifyClient.queries.askBedrock({
+          patientInfo: patientInfo,
+          patientData: bpMessage,
+          weatherData: weatherMessage,
+        });
 
-      if (!errors) {
-        setResult(data?.body || "No data returned");
+        if (!errors) {
+          const llmMessage = data?.body || "No data returned";
+          setResult(headerMessage + bpMessage + llmMessage);
+        } else {
+          console.log(errors);
+        }
       } else {
-        console.log(errors);
+        setResult(headerMessage + bpMessage);
       }
+
     } catch (e) {
       alert(`An error occurred: ${e}`);
     } finally {
