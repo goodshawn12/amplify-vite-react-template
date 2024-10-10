@@ -15,9 +15,9 @@ const schema = a.schema({
   askBedrock: a
     .query()
     .arguments({ 
-      patientInfo: a.string(),
-      patientData: a.string(),
-      weatherData: a.string(),
+      patientMessage: a.string(),
+      weatherMessage: a.string(),
+      activityMessage: a.string(),
      })
     .returns(a.ref("BedrockResponse"))
     .authorization((allow) => [allow.authenticated()])

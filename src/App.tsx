@@ -122,9 +122,9 @@ function App() {
         const timeZone = data.timezone
         const uvi = dataCurrent.uvi;
         const weatherMain = dataCurrent.weather[0].main;
+
         const { inOrOut, dayOrNight } = assessOutdoorEnv(temperature, uvi, weatherMain, currentTime, sunrise, sunset);
         weatherMessage = `${inOrOut}, ${dayOrNight}`
-        
         weatherData = `
           Current Time: ${currentTime.toISOString()} (${timeZone})
           Temperature: ${temperature}F
@@ -137,9 +137,7 @@ function App() {
       } catch (error) {
         console.error('Error fetching weather data:', error);
       }
-
       return { weatherMessage, weatherData }
-
     }
 
     try {
@@ -148,6 +146,7 @@ function App() {
       const patientName = formData.get("patientName")?.toString() || "Guest";
       const patientSex = formData.get("patientSex")?.toString() || "F";
       const patientAge = formData.get("patientAge")?.toString() || "65";
+      const patientAct = formData.get("patientAct")?.toString() || " ";
       const dataSBP = formData.get("dataSBP")?.toString() || "120";
       const dataDBP = formData.get("dataDBP")?.toString() || "80";
       const location = formData.get("patientLoc")?.toString() || "San Diego";
@@ -167,12 +166,13 @@ function App() {
       console.log(location)
       console.log(recordDateTime)
       console.log(weatherMessage)
+      console.log(patientAct)
 
       if (isNormalBP == 1) {
         const { data, errors } = await amplifyClient.queries.askBedrock({
-          patientInfo: patientInfo,
-          patientData: bpMessage,
-          weatherData: weatherMessage,
+          patientMessage: patientInfo, // message related to patient basic info
+          weatherMessage: weatherMessage, // message releated to time and weather info
+          activityMessage: patientAct, // message related to patient's preferred activity
         });
 
         if (!errors) {
@@ -238,6 +238,11 @@ function App() {
             <div className="description-grid">Record Time</div>
             <input type="text" className="input-field" id="dataTime" name="dataTime" placeholder="15:00:00+00" />
           </div>
+          <p className="description">
+              Patient's Acitivty Preference (Optional)
+          </p>
+          <input type="text" className="wide-input" id="patientAct" name="patientAct" placeholder="walk, music" />
+          <p className="description"></p>
           <button type="submit" className="search-button">
             Generate
           </button>

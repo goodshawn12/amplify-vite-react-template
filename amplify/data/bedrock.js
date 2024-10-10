@@ -6,7 +6,7 @@
 export function request(ctx) {
  
     // Construct the prompt with the provided ingredients
-    const { patientInfo, patientData, weatherData } = ctx.args;
+    const { patientMessage, weatherMessage, activityMessage } = ctx.args;
 
     const activitiesList = `
     Activity Name,Indoor or Outdoor,Type,Daytime or Nighttime,Age Requirement
@@ -27,7 +27,7 @@ export function request(ctx) {
 
     Patient demographic
     """
-    ${patientInfo}
+    ${patientMessage}
     """
 
     You will choose the best “exercise activity” and the best “relax activity” for the patient to improve their health and reply in the text message:
@@ -35,7 +35,8 @@ export function request(ctx) {
     To keep up your good health, how about {exercise activity} or {relax activity} now? Let's do this!
     """
 
-    The best activites you choose will be "${weatherData}" activities considering the age of the patient.
+    The best activites you choose will be "${weatherMessage}" activities considering the age of the patient. 
+    If there are several options for "${weatherMessage}" activities, choose the most similar one to patient's preferred activities: ${activityMessage}.
 
     The list of activities you can choose from:
     """
@@ -47,11 +48,11 @@ export function request(ctx) {
 
     // Return the request configuration
     return {
-      // resourcePath: `/model/anthropic.claude-3-sonnet-20240229-v1:0/invoke`,
-      resourcePath: `/model/anthropic.claude-3-haiku-20240307-v1:0/invoke`,
-    //   resourcePath: `/model/anthropic.claude-instant-v1/invoke`,
-    //   resourcePath: `/model/meta.llama3-1-405b-instruct-v1:0/invoke`,
-    //   resourcePath: `/model/us.meta.llama3-2-90b-instruct-v1:0/invoke`,
+      resourcePath: `/model/anthropic.claude-3-sonnet-20240229-v1:0/invoke`,
+      // resourcePath: `/model/anthropic.claude-3-haiku-20240307-v1:0/invoke`,
+      // resourcePath: `/model/anthropic.claude-instant-v1/invoke`,
+      // resourcePath: `/model/meta.llama3-1-405b-instruct-v1:0/invoke`,
+      // resourcePath: `/model/us.meta.llama3-2-90b-instruct-v1:0/invoke`,
 
       method: "POST",
       params: {
