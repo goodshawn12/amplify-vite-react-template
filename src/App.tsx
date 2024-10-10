@@ -47,7 +47,7 @@ function App() {
     return { isNormalBP, bpMessage };
   }
 
-  function assessOutdoorEnv(temperature: number, uvi: any, weatherMain: string, currentTime: Date, sunrise: Date, sunset: Date): {inOrOut: string, dayOrNight: string, isGoodTemp: boolean, isRain: boolean} {
+  function assessOutdoorEnv(temperature: number, weatherMain: string, currentTime: Date, sunrise: Date, sunset: Date): {inOrOut: string, dayOrNight: string, isGoodTemp: boolean, isRain: boolean} {
     let inOrOut: string;
     let dayOrNight: string;
     let isGoodTemp: boolean;
@@ -123,7 +123,7 @@ function App() {
         const uvi = dataCurrent.uvi;
         const weatherMain = dataCurrent.weather[0].main;
 
-        const { inOrOut, dayOrNight } = assessOutdoorEnv(temperature, uvi, weatherMain, currentTime, sunrise, sunset);
+        const { inOrOut, dayOrNight } = assessOutdoorEnv(temperature, weatherMain, currentTime, sunrise, sunset);
         weatherMessage = `${inOrOut}, ${dayOrNight}`
         weatherData = `
           Current Time: ${currentTime.toISOString()} (${timeZone})
