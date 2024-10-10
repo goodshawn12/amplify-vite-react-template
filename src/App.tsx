@@ -44,7 +44,39 @@ function App() {
       bpMessage = `Thanks for sharing your reading! Your blood pressure looks great. `;
     }
 
-    return { isNormalBP, bpMessage};
+    return { isNormalBP, bpMessage };
+  }
+
+  function assessOutdoorEnv(temperature: number, uvi: any, weatherMain: string, currentTime: Date, sunrise: Date, sunset: Date): {inOrOut: string, dayOrNight: string, isGoodTemp: boolean, isRain: boolean} {
+    let inOrOut: string;
+    let dayOrNight: string;
+    let isGoodTemp: boolean;
+    let isRain: boolean;
+    if ( currentTime >= sunrise && currentTime <= sunset ) {
+      dayOrNight = 'daytime';
+    } else {
+      dayOrNight = 'nighttime';
+    }
+
+    if ( temperature < 45 || temperature > 90) {
+      isGoodTemp = false;
+    } else {
+      isGoodTemp = true;
+    }
+
+    if ( weatherMain.toLocaleLowerCase().includes('rain') ) {
+      isRain = true;
+    } else {
+      isRain = false;
+    }
+
+    if ( isRain || !isGoodTemp || dayOrNight == 'nighttime') {
+      inOrOut = 'indoor';
+    } else {
+      inOrOut = 'outdoor';
+    }
+
+    return {inOrOut, dayOrNight, isGoodTemp, isRain}
   }
 
   const onSubmit = async (event: FormEvent<HTMLFormElement>) => {
@@ -74,6 +106,8 @@ function App() {
         lon = -117.1611;
       }
 
+      let weatherMessage: string | null  = "No weather message available";
+      let weatherData: string | null  = "No weather data available";
       const timeStamp = toEpochTimestamp(dateTime);
       const apiUrl = `https://api.openweathermap.org/data/3.0/onecall/timemachine?lat=${lat}&lon=${lon}&dt=${timeStamp}&appid=${apiKey}&units=imperial`;
       try {
@@ -82,26 +116,30 @@ function App() {
         const dataCurrent = data.data[0];
         const temperature = dataCurrent.temp;
         const timeZoneOffset = data.timezone_offset;
-        const currentTime = new Date(dataCurrent.dt * 1000 + timeZoneOffset * 1000).toISOString();
-        const sunrise = new Date(dataCurrent.sunrise * 1000 + timeZoneOffset * 1000).toISOString();
-        const sunset = new Date(dataCurrent.sunset * 1000 + timeZoneOffset * 1000).toISOString();
+        const currentTime = new Date(dataCurrent.dt * 1000 + timeZoneOffset * 1000);
+        const sunrise = new Date(dataCurrent.sunrise * 1000 + timeZoneOffset * 1000);
+        const sunset = new Date(dataCurrent.sunset * 1000 + timeZoneOffset * 1000);
         const timeZone = data.timezone
         const uvi = dataCurrent.uvi;
         const weatherMain = dataCurrent.weather[0].main;
-        const weatherMessage = `
-          Current Time: ${currentTime};
-          Temperature: ${temperature}F; 
-          Weather: ${weatherMain}; 
-          UV Index: ${uvi}; 
-          Sunrise Time: ${sunrise}; 
-          Sunset time: ${sunset}; 
-          Time Zone: ${timeZone};
+        const { inOrOut, dayOrNight } = assessOutdoorEnv(temperature, uvi, weatherMain, currentTime, sunrise, sunset);
+        weatherMessage = `${inOrOut}, ${dayOrNight}`
+        
+        weatherData = `
+          Current Time: ${currentTime.toISOString()} (${timeZone})
+          Temperature: ${temperature}F
+          Weather: ${weatherMain}
+          UV Index: ${uvi}
+          Sunrise Time: ${sunrise.toISOString()}
+          Sunset time: ${sunset.toISOString()}
+          Recommendation: ${inOrOut}, ${dayOrNight}
         `
-        return weatherMessage
       } catch (error) {
         console.error('Error fetching weather data:', error);
-        return "No weather data available"
       }
+
+      return { weatherMessage, weatherData }
+
     }
 
     try {
@@ -120,8 +158,8 @@ function App() {
       const { isNormalBP, bpMessage } = assessBP(parseInt(dataSBP), parseInt(dataDBP));
       // const patientData = `Systolic Blood Pressure: ${dataSBP}; Diastolic Blood Pressure: ${dataDBP};`
 
-      const weatherMessage = await getWeather(recordDateTime, location);
-      setWeatherInfo(weatherMessage);
+      const { weatherMessage, weatherData } = await getWeather(recordDateTime, location);
+      setWeatherInfo(weatherData);
 
       console.log(patientInfo)
       console.log(isNormalBP)
