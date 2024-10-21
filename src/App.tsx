@@ -22,6 +22,8 @@ function App() {
   const [weatherInfo, setWeatherInfo] = useState<string>("");
   const [result, setResult] = useState<string>("");
   const [loading, setLoading] = useState(false);
+  const [history, setHistory] = useState<string>("");
+  const [loadingHistory, setLoadingHistory] = useState(false);
 
   function toEpochTimestamp(dateTime: any) {
     const date = new Date(dateTime);
@@ -82,6 +84,7 @@ function App() {
   const onSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setLoading(true);
+    setLoadingHistory(true);
 
     // OpenWeatherMap API
     const getWeather = async (dateTime: any, cityName: any) => {
@@ -142,6 +145,7 @@ function App() {
 
     try {
       // load information from user inputs
+      let outputMessage: string | null = null; 
       const formData = new FormData(event.currentTarget);
       const patientName = formData.get("patientName")?.toString() || "Guest";
       const patientSex = formData.get("patientSex")?.toString() || "F";
@@ -177,19 +181,39 @@ function App() {
 
         if (!errors) {
           const llmMessage = data?.body || "No data returned";
-          setResult(headerMessage + bpMessage + llmMessage);
+          outputMessage = headerMessage + bpMessage + llmMessage
         } else {
+          outputMessage = headerMessage + bpMessage
           console.log(errors);
         }
       } else {
-        setResult(headerMessage + bpMessage);
+        outputMessage = headerMessage + bpMessage
       }
+      setResult(outputMessage);
+      console.log(history)
+      console.log(outputMessage)
+      // console.log(isHistory)
+      console.log(history)
+      if (!history) {
+        console.log("Settinig History")
+        setHistory(recordDateTime + "\n" + outputMessage + "\n");
+      } else {
+        setHistory(history + "\n" + recordDateTime + "\n" + outputMessage + "\n"); // concatenate past history
+      }
+      console.log(history)
 
     } catch (e) {
       alert(`An error occurred: ${e}`);
     } finally {
       setLoading(false);
+      setLoadingHistory(false);
     }
+  };
+
+  const onClearHistory = async () => {
+    setWeatherInfo("");
+    setResult("");
+    setHistory("")
   };
 
   return (
@@ -280,6 +304,27 @@ function App() {
           weatherInfo && <p className="result">{weatherInfo}</p>
         )}
       </div>
+      <div className="result-container">
+        <p className="description">
+          Communication Hisotry
+        </p>
+        {loadingHistory ? (
+          <div className="loader-container">
+            <p>Loading...</p>
+            <Loader size="large" />
+            <Placeholder size="large" />
+            <Placeholder size="large" />
+            <Placeholder size="large" />
+          </div>
+        ) : (
+          history && <p className="result">{history}</p>
+        )}
+      </div>
+      <form onSubmit={onClearHistory} className="form-container">
+        <button type="submit" className="search-button">
+          Clear History
+        </button>
+      </form>
     </div>
   );
 }

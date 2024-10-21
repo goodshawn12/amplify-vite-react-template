@@ -48,8 +48,8 @@ export function request(ctx) {
 
     // Return the request configuration
     return {
-      resourcePath: `/model/anthropic.claude-3-sonnet-20240229-v1:0/invoke`,
-      // resourcePath: `/model/anthropic.claude-3-haiku-20240307-v1:0/invoke`,
+      // resourcePath: `/model/anthropic.claude-3-sonnet-20240229-v1:0/invoke`,
+      resourcePath: `/model/anthropic.claude-3-haiku-20240307-v1:0/invoke`,
       // resourcePath: `/model/anthropic.claude-instant-v1/invoke`,
       // resourcePath: `/model/meta.llama3-1-405b-instruct-v1:0/invoke`,
       // resourcePath: `/model/us.meta.llama3-2-90b-instruct-v1:0/invoke`,
