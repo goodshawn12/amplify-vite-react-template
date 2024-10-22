@@ -38,13 +38,13 @@ function App() {
 
     if (dataSBP < 90 || dataDBP < 50) {
       isNormalBP = 0;
-      bpMessage = `Your blood pressure readinig is abnormal today. If you haven't done so, could you recheck your blood pressure to ensure the reading is accurate? Thank you. `;
+      bpMessage = `Thanks for sharing your reading! Your blood pressure readinig is abnormal today. If you haven't done so, could you recheck your blood pressure to ensure the reading is accurate?\n`;
     } else if (dataSBP >= 130 || dataDBP >= 90) {
       isNormalBP = 0;
-      bpMessage = `Your blood pressure is higher than normal today. Watch for the following symptoms such as dizziness, headache, and chest discomfort. Contact your provider if needed. Otherwise, recheck your blood pressure after a few minutes of rest. `;
+      bpMessage = `Thanks for sharing your reading! Your blood pressure is higher than normal today. Watch for the following symptoms such as dizziness, headache, and chest discomfort. Contact your provider if needed. Otherwise, recheck your blood pressure after a few minutes of rest.\n`;
     } else {
       isNormalBP = 1;
-      bpMessage = `Your blood pressure looks great. `;
+      bpMessage = `Thanks for sharing your reading! Your blood pressure looks great.\n`;
     }
 
     return { isNormalBP, bpMessage };
@@ -110,8 +110,9 @@ function App() {
         lon = -117.1611;
       }
 
-      let weatherMessage: string | null  = "No weather message available";
-      let weatherData: string | null  = "No weather data available";
+      let weatherMessage: string | null = "No weather message available";
+      let weatherData: string | null = "No weather data available";
+      let weatherTime: string | null = "";
       const timeStamp = toEpochTimestamp(dateTime);
       const apiUrl = `https://api.openweathermap.org/data/3.0/onecall/timemachine?lat=${lat}&lon=${lon}&dt=${timeStamp}&appid=${apiKey}&units=imperial`;
       try {
@@ -128,9 +129,10 @@ function App() {
         const weatherMain = dataCurrent.weather[0].main;
 
         const { inOrOut, dayOrNight } = assessOutdoorEnv(temperature, weatherMain, currentTime, sunrise, sunset);
-        weatherMessage = `${inOrOut}, ${dayOrNight}`
+        weatherMessage = `${inOrOut}, ${dayOrNight}`;
+        weatherTime = `${currentTime.toISOString()} (${timeZone})`;
         weatherData = `
-          Current Time: ${currentTime.toISOString()} (${timeZone})
+          Current Time: ${weatherTime}
           Temperature: ${temperature}F
           Weather: ${weatherMain}
           UV Index: ${uvi}
@@ -141,7 +143,7 @@ function App() {
       } catch (error) {
         console.error('Error fetching weather data:', error);
       }
-      return { weatherMessage, weatherData }
+      return { weatherMessage, weatherData, weatherTime }
     }
 
     try {
@@ -165,7 +167,7 @@ function App() {
       const headerMessage = `Dear ${patientName}, `
       const { isNormalBP, bpMessage } = assessBP(parseInt(dataSBP), parseInt(dataDBP));
 
-      const { weatherMessage, weatherData } = await getWeather(recordDateTime, location);
+      const { weatherMessage, weatherData, weatherTime } = await getWeather(recordDateTime, location);
       setWeatherInfo(weatherData);
 
       console.log(patientInfo)
@@ -177,7 +179,7 @@ function App() {
       console.log(patientAct)
 
       if (dataHistory != "") {
-        bpHistory = `${dataHistory}\n${recordDateTime}, ${dataSBP}, ${dataDBP};`
+        bpHistory = `${dataHistory}\n${weatherTime}, ${dataSBP}, ${dataDBP};`
 
         const { data, errors } = await amplifyClient.queries.askBedrock({
           patientMessage: bpHistory,
@@ -187,14 +189,13 @@ function App() {
         });
         
         if (!errors) {
-          llmMessageData = data?.body || "";
+          llmMessageData = `${data?.body}\n` || "";
           console.log(llmMessageData)
         } else {
           console.log(errors);
         }
       } else {
-        bpHistory = `${recordDateTime}, ${dataSBP}, ${dataDBP};`
-        llmMessageData = "Thanks for sharing your reading! "
+        bpHistory = `${weatherTime}, ${dataSBP}, ${dataDBP};`
         console.log("No data history available.")
       }
       setDataHistory(bpHistory);
@@ -215,10 +216,10 @@ function App() {
         }
       }
 
-      outputMessage = headerMessage + llmMessageData + bpMessage + llmMessageRec;
+      outputMessage = headerMessage + bpMessage + llmMessageData + llmMessageRec;
       setResult(outputMessage);
 
-      historyHeading = `${recordDateTime}, SBP: ${dataSBP}, DBP: ${dataDBP}\n`;
+      historyHeading = `${weatherTime}, SBP: ${dataSBP}, DBP: ${dataDBP}\n`;
       if (!history) {
         setHistory(historyHeading + outputMessage + "\n");
       } else {
@@ -248,9 +249,6 @@ function App() {
           <br />
           <span className="highlight">Lifestyle AI</span>
         </h1>
-        {/* <p className="description">
-          Input personal basic information and vital data, and Lifestyle AI will generate a recommendation.
-        </p> */}
       </div>
       <form onSubmit={onSubmit} className="form-container">
         <div className="search-container">
@@ -281,10 +279,10 @@ function App() {
             <input type="text" className="input-field" id="dataDBP" name="dataDBP" placeholder="80" />
 
             <div className="description-grid">Record Date</div>
-            <input type="text" className="input-field" id="dataDate" name="dataDate" placeholder="2024-10-01" />
+            <input type="text" className="input-field" id="dataDate" name="dataDate" placeholder="2024-10-10" />
 
             <div className="description-grid">Record Time</div>
-            <input type="text" className="input-field" id="dataTime" name="dataTime" placeholder="15:00:00+00" />
+            <input type="text" className="input-field" id="dataTime" name="dataTime" placeholder="08:00:00-07" />
           </div>
           <p className="description">
               Patient's Acitivty Preference (Optional)

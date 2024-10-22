@@ -49,6 +49,7 @@ export function request(ctx) {
       The accuracy and quality of your decisions and suggested activities are critical to the patient's health and quality of life. The reply should only contain the specified text message. 
       `
     } else if (conditionMessage == 'history') {
+
       prompt = `
       You are an expert medical doctor and an experienced lifestyle coach. Below is the patient's history of blood pressure measurements:
       """
@@ -56,10 +57,10 @@ export function request(ctx) {
       ${patientMessage}
       """
 
-      You will provide two comments on specific data points to give concrete feedback on the Data Upload patterns and the trend of blood pressure. Do not give any negative feedback or comment on abnormal measurements. 
-      The message will be directed to the patient with the goal of providing insights and encouragement for the patient to keep recording their blood pressure. 
-      The message will be limited to fewer than 500 characters and focused on data insights.
+      You will provide two concrete comments on the data points, their upload patterns, and the trend of blood pressure. Do not give any negative feedback or comment on abnormal measurements. Your goal is to provide insights and encouragement for the patient such that they keep measuring their blood pressure. 
+      Your reply will be a concise text message addressed to the patient without title line. Your reply will include two sentences on the comments of data insights coments and and one sentence of encouragement message.
       `
+
     } else {
       prompt = `Display the following information without modification: """Condition ${conditionMessage} is not implemented."""`
     }
