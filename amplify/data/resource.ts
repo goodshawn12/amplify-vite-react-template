@@ -18,6 +18,7 @@ const schema = a.schema({
       patientMessage: a.string(),
       weatherMessage: a.string(),
       activityMessage: a.string(),
+      conditionMessage: a.string(),
      })
     .returns(a.ref("BedrockResponse"))
     .authorization((allow) => [allow.authenticated()])

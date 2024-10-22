@@ -22,6 +22,7 @@ function App() {
   const [weatherInfo, setWeatherInfo] = useState<string>("");
   const [result, setResult] = useState<string>("");
   const [loading, setLoading] = useState(false);
+  const [dataHistory, setDataHistory] = useState<string>("");
   const [history, setHistory] = useState<string>("");
   const [loadingHistory, setLoadingHistory] = useState(false);
 
@@ -37,13 +38,13 @@ function App() {
 
     if (dataSBP < 90 || dataDBP < 50) {
       isNormalBP = 0;
-      bpMessage = `Thanks for sharing your reading! Your blood pressure readinig is abnormal today. If you haven't done so, could you recheck your blood pressure to ensure the reading is accurate? Thank you. `;
+      bpMessage = `Your blood pressure readinig is abnormal today. If you haven't done so, could you recheck your blood pressure to ensure the reading is accurate? Thank you. `;
     } else if (dataSBP >= 130 || dataDBP >= 90) {
       isNormalBP = 0;
-      bpMessage = `Thanks for sharing your reading! Your blood pressure is higher than normal today. Watch for the following symptoms such as dizziness, headache, and chest discomfort. Contact your provider if needed. Otherwise, recheck your blood pressure after a few minutes of rest. `;
+      bpMessage = `Your blood pressure is higher than normal today. Watch for the following symptoms such as dizziness, headache, and chest discomfort. Contact your provider if needed. Otherwise, recheck your blood pressure after a few minutes of rest. `;
     } else {
       isNormalBP = 1;
-      bpMessage = `Thanks for sharing your reading! Your blood pressure looks great. `;
+      bpMessage = `Your blood pressure looks great. `;
     }
 
     return { isNormalBP, bpMessage };
@@ -145,7 +146,10 @@ function App() {
 
     try {
       // load information from user inputs
-      let outputMessage: string | null = null; 
+      let outputMessage: string | null = null;
+      let llmMessageRec: string | null = ""; 
+      let llmMessageData: string | null = "";
+      let bpHistory: string | null = null;
       let historyHeading: string | null = null;
       const formData = new FormData(event.currentTarget);
       const patientName = formData.get("patientName")?.toString() || "Guest";
@@ -158,9 +162,8 @@ function App() {
       const recordDateTime = `${formData.get("dataDate")?.toString() || "2024-10-01"} ${formData.get("dataTime")?.toString() || "15:00:00+00"}`
 
       const patientInfo = `Sex: ${patientSex}; Age: ${patientAge};`
-      const headerMessage = `Dear ${patientName},\n`
+      const headerMessage = `Dear ${patientName}, `
       const { isNormalBP, bpMessage } = assessBP(parseInt(dataSBP), parseInt(dataDBP));
-      // const patientData = `Systolic Blood Pressure: ${dataSBP}; Diastolic Blood Pressure: ${dataDBP};`
 
       const { weatherMessage, weatherData } = await getWeather(recordDateTime, location);
       setWeatherInfo(weatherData);
@@ -173,23 +176,46 @@ function App() {
       console.log(weatherMessage)
       console.log(patientAct)
 
+      if (dataHistory != "") {
+        bpHistory = `${dataHistory}\n${recordDateTime}, ${dataSBP}, ${dataDBP};`
+
+        const { data, errors } = await amplifyClient.queries.askBedrock({
+          patientMessage: bpHistory,
+          weatherMessage: '',
+          activityMessage: '',
+          conditionMessage: 'history',
+        });
+        
+        if (!errors) {
+          llmMessageData = data?.body || "";
+          console.log(llmMessageData)
+        } else {
+          console.log(errors);
+        }
+      } else {
+        bpHistory = `${recordDateTime}, ${dataSBP}, ${dataDBP};`
+        llmMessageData = "Thanks for sharing your reading! "
+        console.log("No data history available.")
+      }
+      setDataHistory(bpHistory);
+      console.log(bpHistory)
+
       if (isNormalBP == 1) {
         const { data, errors } = await amplifyClient.queries.askBedrock({
           patientMessage: patientInfo, // message related to patient basic info
           weatherMessage: weatherMessage, // message releated to time and weather info
           activityMessage: patientAct, // message related to patient's preferred activity
+          conditionMessage: 'recommendation',
         });
 
         if (!errors) {
-          const llmMessage = data?.body || "No data returned";
-          outputMessage = headerMessage + bpMessage + llmMessage
+          llmMessageRec = data?.body || "";
         } else {
-          outputMessage = headerMessage + bpMessage
           console.log(errors);
         }
-      } else {
-        outputMessage = headerMessage + bpMessage
       }
+
+      outputMessage = headerMessage + llmMessageData + bpMessage + llmMessageRec;
       setResult(outputMessage);
 
       historyHeading = `${recordDateTime}, SBP: ${dataSBP}, DBP: ${dataDBP}\n`;
@@ -210,7 +236,8 @@ function App() {
   const onClearHistory = async () => {
     setWeatherInfo("");
     setResult("");
-    setHistory("")
+    setHistory("");
+    setDataHistory("");
   };
 
   return (

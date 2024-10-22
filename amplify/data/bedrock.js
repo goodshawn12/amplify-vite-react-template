@@ -6,7 +6,7 @@
 export function request(ctx) {
  
     // Construct the prompt with the provided ingredients
-    const { patientMessage, weatherMessage, activityMessage } = ctx.args;
+    const { patientMessage, weatherMessage, activityMessage, conditionMessage } = ctx.args;
 
     const activitiesList = `
     Activity Name,Indoor or Outdoor,Type,Daytime or Nighttime,Age Requirement
@@ -22,34 +22,52 @@ export function request(ctx) {
     """a 10-minute sensory walk in your favorite park close by, focusing on the sounds, the touches, and the smell""",outdoor,relax,daytime,<100
     `
 
-    const prompt = `
-    You are an expert medical doctor and an experienced lifestyle coach. You are working with a patient with the following background information. At the end, you will reply to the patient in a text message only with the specified format.
+    let prompt = '';
+    if (conditionMessage == 'recommendation') {
+      // main prompt with activity suggestion
+      prompt = `
+      You are an expert medical doctor and an experienced lifestyle coach. You are working with a patient with the following background information. At the end, you will reply to the patient in a text message only with the specified format.
 
-    Patient demographic
-    """
-    ${patientMessage}
-    """
+      Patient demographic
+      """
+      ${patientMessage}
+      """
 
-    You will choose the best “exercise activity” and the best “relax activity” for the patient to improve their health and reply in the text message:
-    """
-    To keep up your good health, how about {exercise activity} or {relax activity} now? Let's do this!
-    """
+      You will choose the best “exercise activity” and the best “relax activity” for the patient to improve their health and reply in the text message:
+      """
+      To keep up your good health, how about {exercise activity} or {relax activity} now? Let's do this!
+      """
 
-    The best activites you choose will be "${weatherMessage}" activities considering the age of the patient. 
-    If there are several options for "${weatherMessage}" activities, choose the most similar one to patient's preferred activities: ${activityMessage}.
+      The best activites you choose will be "${weatherMessage}" activities considering the age of the patient. 
+      If there are several options for "${weatherMessage}" activities, choose the most similar one to patient's preferred activities: ${activityMessage}.
 
-    The list of activities you can choose from:
-    """
-    ${activitiesList}
-    """
+      The list of activities you can choose from:
+      """
+      ${activitiesList}
+      """
 
-    The accuracy and quality of your decisions and suggested activities are critical to the patient's health and quality of life. The reply should only contain the specified text message. 
-    `
+      The accuracy and quality of your decisions and suggested activities are critical to the patient's health and quality of life. The reply should only contain the specified text message. 
+      `
+    } else if (conditionMessage == 'history') {
+      prompt = `
+      You are an expert medical doctor and an experienced lifestyle coach. Below is the patient's history of blood pressure measurements:
+      """
+      Data Upload Time, Systolic Blood Pressure, Diastolic Blood Pressure;
+      ${patientMessage}
+      """
+
+      You will provide two comments on specific data points to give concrete feedback on the Data Upload patterns and the trend of blood pressure. Do not give any negative feedback or comment on abnormal measurements. 
+      The message will be directed to the patient with the goal of providing insights and encouragement for the patient to keep recording their blood pressure. 
+      The message will be limited to fewer than 500 characters and focused on data insights.
+      `
+    } else {
+      prompt = `Display the following information without modification: """Condition ${conditionMessage} is not implemented."""`
+    }
 
     // Return the request configuration
     return {
-      // resourcePath: `/model/anthropic.claude-3-sonnet-20240229-v1:0/invoke`,
-      resourcePath: `/model/anthropic.claude-3-haiku-20240307-v1:0/invoke`,
+      resourcePath: `/model/anthropic.claude-3-sonnet-20240229-v1:0/invoke`,
+      // resourcePath: `/model/anthropic.claude-3-haiku-20240307-v1:0/invoke`,
       // resourcePath: `/model/anthropic.claude-instant-v1/invoke`,
       // resourcePath: `/model/meta.llama3-1-405b-instruct-v1:0/invoke`,
       // resourcePath: `/model/us.meta.llama3-2-90b-instruct-v1:0/invoke`,
