@@ -146,6 +146,7 @@ function App() {
     try {
       // load information from user inputs
       let outputMessage: string | null = null; 
+      let historyHeading: string | null = null;
       const formData = new FormData(event.currentTarget);
       const patientName = formData.get("patientName")?.toString() || "Guest";
       const patientSex = formData.get("patientSex")?.toString() || "F";
@@ -190,17 +191,13 @@ function App() {
         outputMessage = headerMessage + bpMessage
       }
       setResult(outputMessage);
-      console.log(history)
-      console.log(outputMessage)
-      // console.log(isHistory)
-      console.log(history)
+
+      historyHeading = `${recordDateTime}, SBP: ${dataSBP}, DBP: ${dataDBP}\n`;
       if (!history) {
-        console.log("Settinig History")
-        setHistory(recordDateTime + "\n" + outputMessage + "\n");
+        setHistory(historyHeading + outputMessage + "\n");
       } else {
-        setHistory(history + "\n" + recordDateTime + "\n" + outputMessage + "\n"); // concatenate past history
+        setHistory(history + "\n" + historyHeading + outputMessage + "\n"); // concatenate past history
       }
-      console.log(history)
 
     } catch (e) {
       alert(`An error occurred: ${e}`);
