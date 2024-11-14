@@ -157,7 +157,7 @@ function App() {
       const patientName = formData.get("patientName")?.toString() || "Guest";
       const patientSex = formData.get("patientSex")?.toString() || "F";
       const patientAge = formData.get("patientAge")?.toString() || "65";
-      const patientAct = formData.get("patientAct")?.toString() || " ";
+      const patientAct = formData.get("patientAct")?.toString() || "excercise";
       const dataSBP = formData.get("dataSBP")?.toString() || "120";
       const dataDBP = formData.get("dataDBP")?.toString() || "80";
       const location = formData.get("patientLoc")?.toString() || "San Diego";
@@ -279,15 +279,15 @@ function App() {
             <input type="text" className="input-field" id="dataDBP" name="dataDBP" placeholder="80" />
 
             <div className="description-grid">Record Date</div>
-            <input type="text" className="input-field" id="dataDate" name="dataDate" placeholder="2024-10-10" />
+            <input type="text" className="input-field" id="dataDate" name="dataDate" placeholder="2024-11-10" />
 
             <div className="description-grid">Record Time</div>
             <input type="text" className="input-field" id="dataTime" name="dataTime" placeholder="08:00:00-07" />
           </div>
           <p className="description">
-              Patient's Acitivty Preference (Optional)
+              Patient's Preferred Type of Recommendation
           </p>
-          <input type="text" className="wide-input" id="patientAct" name="patientAct" placeholder="walk, music" />
+          <input type="text" className="wide-input" id="patientAct" name="patientAct" placeholder="(exercise, relax, sleep, diet)" />
           <p className="description"></p>
           <button type="submit" className="search-button">
             Generate

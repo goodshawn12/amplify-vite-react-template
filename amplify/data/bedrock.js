@@ -20,34 +20,71 @@ export function request(ctx) {
     """a 10-minute of outdoor stretching/yoga""",outdoor,exercise,daytime,<80
     """a 20-minute gardening in your backyard""",outdoor,relax,daytime,<100
     """a 10-minute sensory walk in your favorite park close by, focusing on the sounds, the touches, and the smell""",outdoor,relax,daytime,<100
+    """taking a warm shower or bath to unwind and relax""",indoor,relax,daytime/evening/nighttime,<100
+    """taking a warm shower or bath before bed to unwind and relax""",indoor,sleep,nighttime,<100
+    """darkening your bedroom or dimming the lights an hour before bed"" ",indoor,sleep,nighttime,<100
+    """using earplugs or white noise to reduce the interruption from outside""",indoor,sleep,nighttime,<100
+    """limiting drinks with caffeine and sugar""",indoor,sleep,daytime,<80
+    """establishing a relaxation routine""",indoor,sleep,nighttime,<100
+    """adjusting room temperature to keep it cool, around 65-70F""",indoor,sleep,nighttime,<100
+    """limiting your nap to 20-30 minutes for a quick refresh""",indoor,sleep,daytime,<100
+    """going to bed and waking up at the same time everyday""",indoor,sleep,daytime/nighttime,<100
+    """avoiding screens for at least 30-60 minutes before sleep""",indoor,sleep,nighttime,<100
+    """using calming scents such as essential oils""",indoor,sleep,nighttime,<100
+    """limiting fluids in the evening""",indoor,sleep,daytime,<100
+    """taking relaxing herbal tea before bed, but keeping the quantity small""",indoor,sleep,nighttime,<100
+    """having a light and early dinner to allow digestion""",indoor,sleep,evening,<100
+    """choosing complex carbohydrates for energy""",indoor,diet,daytime,<100
+    """eating small, frequent meals""",indoor,diet,daytime,<100
+    """staying hydrated with water-rich foods such as cucumbers, celery or orange""",indoor,diet,daytime,<100
+    """including anti-inflammatory foods like berries and leafy greens""",indoor,diet,daytime,<100
+    """eating foods high in protein to stay full, not overeat, and build muscle""",indoor,diet,daytime/evening,<100
+    """eating less red meat and more fish/poultry or vegetable-based proteins to lessen cholesterol""",indoor,diet,daytime/evening,<100
+    """limit the amount of fat (e.g. butter, margarine, oil) when cooking""",indoor,diet,daytime/evening,<100
+    """eating food that's high in fiber to stay full for longer""",indoor,diet,daytime/evening,<100
+    """limiting processed or ready-made food""",indoor,diet,daytime/evening,<100
+    """limit foods that are high in salt/sodium""",indoor/outdoor,diet,daytime/evening,<100
+    """avoid foods that are high in sugar""",indoor,diet,daytime/evening,<100
+    """take a walk along the beach""",outdoor,exercise,daytime,<80
+    """swim or walk in a pool""",indoor/outdoor,exercise,daytime,<80
+    """sweep the driveway or vacuum the carpet in your home""",indoor/outdoor,exercise,daytime,<80
+    """dance around in your house""",indoor,exercise,daytime,<80
+    """use resistance bands for strength training""",indoor,exercise,daytime,<80
+    """read a book""",indoor,sleep,evening/nighttime,<100
+    """journal your thoughts""",indoor/outdoor,relax,daytime/evening/nighttime,<100
+    """talk to a family member or close friend""",indoor/outdoor,relax,daytime/evening/nighttime,<100
     `
 
     let prompt = '';
     if (conditionMessage == 'recommendation') {
       // main prompt with activity suggestion
       prompt = `
-      You are an expert medical doctor and an experienced lifestyle coach. You are working with a patient with the following background information. At the end, you will reply to the patient in a text message only with the specified format.
+      You are an expert medical doctor and an experienced lifestyle coach. You are working with a patient who has the following background information. Finally, you will reply to the patient in a text message only with the specified format.
 
-      Patient demographic
+      Patient demography
       """
       ${patientMessage}
       """
 
-      You will choose the best “exercise activity” and the best “relax activity” for the patient to improve their health and reply in the text message:
+      You will choose the best two activities for the patient to improve their health and reply in the text message:
       """
-      To keep up your good health, how about {exercise activity} or {relax activity} now? Let's do this!
+      To keep up your good health, how about {activity one} or {activity two}? Let's do this!
       """
+      Exclude the quotation marks from the activities. 
 
-      The best activites you choose will be "${weatherMessage}" activities considering the age of the patient. 
-      If there are several options for "${weatherMessage}" activities, choose the most similar one to patient's preferred activities: ${activityMessage}.
+      Your selection will follow the steps below:
+      1. Find "${weatherMessage}" activities that match the "Indoor or Outdoor" and "Daytime or Nighttime" properties.
+      2. Find activities with "Type" property matching or closest to "${activityMessage}".
+      3. Select the best two activities that satisfy patient's age requirement and are the most similar to patient's preferred activities: ${activityMessage}.
 
-      The list of activities you can choose from:
+      Below is the list of activities you can choose from. The first row is the properties of the activities.
       """
       ${activitiesList}
       """
 
       The accuracy and quality of your decisions and suggested activities are critical to the patient's health and quality of life. The reply should only contain the specified text message. 
       `
+
     } else if (conditionMessage == 'history') {
 
       prompt = `
