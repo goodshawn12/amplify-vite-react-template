@@ -39,7 +39,7 @@ function App() {
     if (dataSBP < 90 || dataDBP < 60) {
       isNormalBP = 0;
       bpMessage = `Thanks for sharing your reading! Your blood pressure readinig is abnormal today. If you haven't done so, could you recheck your blood pressure to ensure the reading is accurate?\n`;
-    } else if (dataSBP >= 140 || dataDBP >= 90) {
+    } else if (dataSBP >= 150 || dataDBP >= 100) {
       isNormalBP = 0;
       bpMessage = `Thanks for sharing your reading! Your blood pressure is higher than normal today. Watch for the following symptoms such as dizziness, headache, and chest discomfort. Contact your provider if needed. Otherwise, recheck your blood pressure after a few minutes of rest.\n`;
     } else {
