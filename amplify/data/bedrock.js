@@ -94,8 +94,8 @@ export function request(ctx) {
       ${patientMessage}
       """
 
-      You will provide two concrete comments on the data points, their upload patterns, and the trend of blood pressure. Do not give any negative feedback or comment on abnormal measurements. Your goal is to provide insights and encouragement for the patient such that they keep measuring their blood pressure. 
-      Your reply will be a concise text message addressed to the patient without title line. Your reply will include two sentences on the comments of data insights coments and and one sentence of encouragement message.
+      You will provide three data-citing comments on the data upload pattern, the trend of blood pressure values, and especially how the latest blood pressure value compared to the history values. Do not give any negative feedback or comment on abnormal measurements. Your goal is to provide insights and encouragement for the patient such that they keep measuring their blood pressure. 
+      Your reply will be a concise text message addressed to the patient without title line. Your reply will include three concise sentences on the comments of data insights coments and and one sentence of encouragement message.
       `
 
     } else {

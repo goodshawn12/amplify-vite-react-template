@@ -146,6 +146,23 @@ function App() {
       return { weatherMessage, weatherData, weatherTime }
     }
 
+    const getLLMCustomResponse = async (patientMessage: string, weatherMessage: string, activityMessage: string, conditionMessage: string) => {
+      let llmMessage: string | null = "";
+      const { data, errors } = await amplifyClient.queries.askBedrock({
+        patientMessage: patientMessage,  // message related to patient basic info
+        weatherMessage: weatherMessage,  // message releated to time and weather info
+        activityMessage: activityMessage,  // message related to patient's preferred activity
+        conditionMessage: conditionMessage,  // {'history', 'recommendation'} condition for selecting prompts
+      });
+      if (!errors) {
+        llmMessage = `${data?.body}\n` || "";
+        console.log(llmMessage)
+      } else {
+        console.log(errors);
+      }
+      return llmMessage;
+    }
+
     try {
       // load information from user inputs
       let outputMessage: string | null = null;
@@ -158,10 +175,11 @@ function App() {
       const patientSex = formData.get("patientSex")?.toString() || "F";
       const patientAge = formData.get("patientAge")?.toString() || "65";
       const patientAct = formData.get("patientAct")?.toString() || "excercise";
-      const dataSBP = formData.get("dataSBP")?.toString() || "120";
-      const dataDBP = formData.get("dataDBP")?.toString() || "80";
-      const location = formData.get("patientLoc")?.toString() || "San Diego";
-      const recordDateTime = `${formData.get("dataDate")?.toString() || "2024-10-01"} ${formData.get("dataTime")?.toString() || "15:00:00+00"}`
+      const dataSBP = formData.get("dataSBP")?.toString() || "125";
+      const dataDBP = formData.get("dataDBP")?.toString() || "85";
+      const location = formData.get("patientLoc")?.toString() || "Tokyo";
+      const recordDateTime = `${formData.get("dataDate")?.toString() || "2024-11-25"} ${formData.get("dataTime")?.toString() || "08:00:00+09"}`
+      const historyBPUser = formData.get("historyBPUser")?.toString() || "";
 
       const patientInfo = `Sex: ${patientSex}; Age: ${patientAge};`
       const headerMessage = `Dear ${patientName}, `
@@ -177,43 +195,28 @@ function App() {
       console.log(recordDateTime)
       console.log(weatherMessage)
       console.log(patientAct)
+      console.log(historyBPUser)
+      
+      if (dataHistory == "") { // no saved BP history, first time call
+        if (historyBPUser.trim() == "" || historyBPUser.trim().toLowerCase() == "none") { // no BP history from user input 
+          bpHistory = `${weatherTime}, ${dataSBP}, ${dataDBP};`
+          console.log("No data history available.")
 
-      if (dataHistory != "") {
-        bpHistory = `${dataHistory}\n${weatherTime}, ${dataSBP}, ${dataDBP};`
-
-        const { data, errors } = await amplifyClient.queries.askBedrock({
-          patientMessage: bpHistory,
-          weatherMessage: '',
-          activityMessage: '',
-          conditionMessage: 'history',
-        });
-        
-        if (!errors) {
-          llmMessageData = `${data?.body}\n` || "";
-          console.log(llmMessageData)
-        } else {
-          console.log(errors);
+        } else { // load BP history from user input
+          bpHistory = `${historyBPUser.trim()}\n${weatherTime}, ${dataSBP}, ${dataDBP};`
+          console.log("Reading BP history data from user input.")
+          llmMessageData = await getLLMCustomResponse(bpHistory, '', '', 'history')
         }
+
       } else {
-        bpHistory = `${weatherTime}, ${dataSBP}, ${dataDBP};`
-        console.log("No data history available.")
+        bpHistory = `${dataHistory}\n${weatherTime}, ${dataSBP}, ${dataDBP};`
+        llmMessageData = await getLLMCustomResponse(bpHistory, '', '', 'history')
       }
       setDataHistory(bpHistory);
       console.log(bpHistory)
 
       if (isNormalBP == 1) {
-        const { data, errors } = await amplifyClient.queries.askBedrock({
-          patientMessage: patientInfo, // message related to patient basic info
-          weatherMessage: weatherMessage, // message releated to time and weather info
-          activityMessage: patientAct, // message related to patient's preferred activity
-          conditionMessage: 'recommendation',
-        });
-
-        if (!errors) {
-          llmMessageRec = data?.body || "";
-        } else {
-          console.log(errors);
-        }
+        llmMessageRec = await getLLMCustomResponse(patientInfo, weatherMessage, patientAct, 'recommendation')
       }
 
       outputMessage = headerMessage + bpMessage + llmMessageData + llmMessageRec;
@@ -266,28 +269,32 @@ function App() {
             <input type="text" className="input-field" id="patientAge" name="patientAge" placeholder="65" />
 
             <div className="description-grid">Location</div>
-            <input type="text" className="input-field" id="patientLoc" name="patientLoc" placeholder="San Diego" />
+            <input type="text" className="input-field" id="patientLoc" name="patientLoc" placeholder="Tokyo" />
           </div>
           <p className="description">
               Patient's Blood Pressure Data Today
           </p>
           <div className="grid-container">
             <div className="description-grid">Systolic BP</div>
-            <input type="text" className="input-field" id="dataSBP" name="dataSBP" placeholder="120" />
+            <input type="text" className="input-field" id="dataSBP" name="dataSBP" placeholder="125" />
 
             <div className="description-grid">Diastolic BP</div>
-            <input type="text" className="input-field" id="dataDBP" name="dataDBP" placeholder="80" />
+            <input type="text" className="input-field" id="dataDBP" name="dataDBP" placeholder="85" />
 
             <div className="description-grid">Record Date</div>
-            <input type="text" className="input-field" id="dataDate" name="dataDate" placeholder="2024-11-10" />
+            <input type="text" className="input-field" id="dataDate" name="dataDate" placeholder="2024-11-25" />
 
             <div className="description-grid">Record Time</div>
-            <input type="text" className="input-field" id="dataTime" name="dataTime" placeholder="08:00:00-07" />
+            <input type="text" className="input-field" id="dataTime" name="dataTime" placeholder="08:00:00+09" />
           </div>
           <p className="description">
               Patient's Preferred Type of Recommendation
           </p>
-          <input type="text" className="wide-input" id="patientAct" name="patientAct" placeholder="(exercise, relax, sleep, diet)" />
+          <input type="text" className="wide-input" id="patientAct" name="patientAct" placeholder="Default: exercise (relax, sleep, diet)" />
+          <p className="description">
+              Patient's Blood Pressure History
+          </p>
+          <textarea className="wide-input" rows={3} id="historyBPUser" name="historyBPUser" placeholder={`Default: none or leave blank. Sample data format:\n2024-11-24 08:00:00 (Asia/Tokyo), 135, 90;\n2024-11-24 18:00:00 (Asia/Tokyo), 125, 80;`} ></textarea>
           <p className="description"></p>
           <button type="submit" className="search-button">
             Generate
