@@ -8,51 +8,55 @@ export function request(ctx) {
     // Construct the prompt with the provided ingredients
     const { patientMessage, weatherMessage, activityMessage, conditionMessage } = ctx.args;
 
-    const activitiesList = `
-    Activity Name,Indoor or Outdoor,Type,Daytime or Nighttime,Age Requirement
-    """a 10-minute balancing exercise indoors""",indoor,exercise,nighttime,<80
-    """a 10-minute indoor cycling""",indoor,exercise,daytime,<80
-    """deep breathing exercises 5 times""",indoor,relax,nighttime,<100
-    """a 5-10 minute meditation""",indoor,relax,nighttime,<100
-    """playing soothing music or your favorite song""",indoor,relax,nighttime,<100
-    """a 10-minute walk in your neighborhood""",outdoor,exercise,daytime,<100
-    """a 10-minute barefoot walk on grass, sand, or earth""",outdoor,exercise,daytime,<100
-    """a 10-minute of outdoor stretching/yoga""",outdoor,exercise,daytime,<80
-    """a 20-minute gardening in your backyard""",outdoor,relax,daytime,<100
-    """a 10-minute sensory walk in your favorite park close by, focusing on the sounds, the touches, and the smell""",outdoor,relax,daytime,<100
-    """taking a warm shower or bath to unwind and relax""",indoor,relax,daytime/evening/nighttime,<100
-    """taking a warm shower or bath before bed to unwind and relax""",indoor,sleep,nighttime,<100
-    """darkening your bedroom or dimming the lights an hour before bed"" ",indoor,sleep,nighttime,<100
-    """using earplugs or white noise to reduce the interruption from outside""",indoor,sleep,nighttime,<100
-    """limiting drinks with caffeine and sugar""",indoor,sleep,daytime,<80
-    """establishing a relaxation routine""",indoor,sleep,nighttime,<100
-    """adjusting room temperature to keep it cool, around 65-70F""",indoor,sleep,nighttime,<100
-    """limiting your nap to 20-30 minutes for a quick refresh""",indoor,sleep,daytime,<100
-    """going to bed and waking up at the same time everyday""",indoor,sleep,daytime/nighttime,<100
-    """avoiding screens for at least 30-60 minutes before sleep""",indoor,sleep,nighttime,<100
-    """using calming scents such as essential oils""",indoor,sleep,nighttime,<100
-    """limiting fluids in the evening""",indoor,sleep,daytime,<100
-    """taking relaxing herbal tea before bed, but keeping the quantity small""",indoor,sleep,nighttime,<100
-    """having a light and early dinner to allow digestion""",indoor,sleep,evening,<100
-    """choosing complex carbohydrates for energy""",indoor,diet,daytime,<100
-    """eating small, frequent meals""",indoor,diet,daytime,<100
-    """staying hydrated with water-rich foods such as cucumbers, celery or orange""",indoor,diet,daytime,<100
-    """including anti-inflammatory foods like berries and leafy greens""",indoor,diet,daytime,<100
-    """eating foods high in protein to stay full, not overeat, and build muscle""",indoor,diet,daytime/evening,<100
-    """eating less red meat and more fish/poultry or vegetable-based proteins to lessen cholesterol""",indoor,diet,daytime/evening,<100
-    """limit the amount of fat (e.g. butter, margarine, oil) when cooking""",indoor,diet,daytime/evening,<100
-    """eating food that's high in fiber to stay full for longer""",indoor,diet,daytime/evening,<100
-    """limiting processed or ready-made food""",indoor,diet,daytime/evening,<100
-    """limit foods that are high in salt/sodium""",indoor/outdoor,diet,daytime/evening,<100
-    """avoid foods that are high in sugar""",indoor,diet,daytime/evening,<100
-    """take a walk along the beach""",outdoor,exercise,daytime,<80
-    """swim or walk in a pool""",indoor/outdoor,exercise,daytime,<80
-    """sweep the driveway or vacuum the carpet in your home""",indoor/outdoor,exercise,daytime,<80
-    """dance around in your house""",indoor,exercise,daytime,<80
-    """use resistance bands for strength training""",indoor,exercise,daytime,<80
-    """read a book""",indoor,sleep,evening/nighttime,<100
-    """journal your thoughts""",indoor/outdoor,relax,daytime/evening/nighttime,<100
-    """talk to a family member or close friend""",indoor/outdoor,relax,daytime/evening/nighttime,<100
+    const activitiesList = `Activity Name,Indoor or Outdoor,Type,Daytime or Nighttime,Age Requirement
+"""a 10-minute balancing exercise indoors""",indoor,exercise,nighttime,<80
+"""a 10-minute indoor cycling""",indoor,exercise,daytime,<80
+"""deep breathing exercises 5 times""",indoor,relax,nighttime,<100
+"""a 5-10 minute meditation""",indoor,relax,nighttime,<100
+"""playing soothing music or your favorite song""",indoor,relax,nighttime,<100
+"""a 10-minute walk in your neighborhood""",outdoor,exercise,daytime,<100
+"""a 10-minute barefoot walk on grass, sand, or earth""",outdoor,exercise,daytime,<100
+"""a 10-minute of outdoor stretching/yoga""",outdoor,exercise,daytime,<80
+"""a 20-minute gardening in your backyard""",outdoor,relax,daytime,<100
+"""a 10-minute sensory walk in your favorite park close by, focusing on the sounds, the touches, and the smell""",outdoor,relax,daytime,<100
+"""taking a warm shower or bath to unwind and relax""",indoor,relax,daytime/evening/nighttime,<100
+"""taking a warm shower or bath before bed to unwind and relax""",indoor,sleep,nighttime,<100
+"""darkening your bedroom or dimming the lights an hour before bed"" ",indoor,sleep,nighttime,<100
+"""using earplugs or white noise to reduce the interruption from outside""",indoor,sleep,nighttime,<100
+"""limiting drinks with caffeine and sugar""",indoor,sleep,daytime,<80
+"""establishing a relaxation routine""",indoor,sleep,nighttime,<100
+"""adjusting room temperature to keep it cool, around 65-70F""",indoor,sleep,nighttime,<100
+"""limiting your nap to 20-30 minutes for a quick refresh""",indoor,sleep,daytime,<100
+"""going to bed and waking up at the same time everyday""",indoor,sleep,daytime/nighttime,<100
+"""avoiding screens for at least 30-60 minutes before sleep""",indoor,sleep,nighttime,<100
+"""using calming scents such as essential oils""",indoor,sleep,nighttime,<100
+"""limiting fluids in the evening""",indoor,sleep,daytime,<100
+"""taking relaxing herbal tea before bed, but keeping the quantity small""",indoor,sleep,nighttime,<100
+"""having a light and early dinner to allow digestion""",indoor,sleep,evening,<100
+"""choosing complex carbohydrates for energy""",indoor,diet,daytime,<100
+"""eating small, frequent meals""",indoor,diet,daytime,<100
+"""staying hydrated with water-rich foods such as cucumbers, celery or orange""",indoor,diet,daytime,<100
+"""including anti-inflammatory foods like berries and leafy greens""",indoor,diet,daytime,<100
+"""eating foods high in protein to stay full, not overeat, and build muscle""",indoor,diet,daytime/evening,<100
+"""eating less red meat and more fish/poultry or vegetable-based proteins to lessen cholesterol""",indoor,diet,daytime/evening,<100
+"""limit the amount of fat (e.g. butter, margarine, oil) when cooking""",indoor,diet,daytime/evening,<100
+"""eating food that's high in fiber to stay full for longer""",indoor,diet,daytime/evening,<100
+"""limiting processed or ready-made food""",indoor,diet,daytime/evening,<100
+"""limit foods that are high in salt/sodium""",indoor/outdoor,diet,daytime/evening,<100
+"""avoid foods that are high in sugar""",indoor,diet,daytime/evening,<100
+"""take a walk along the beach""",outdoor,exercise,daytime,<80
+"""swim or walk in a pool""",indoor/outdoor,exercise,daytime,<80
+"""sweep the driveway or vacuum the carpet in your home""",indoor/outdoor,exercise,daytime,<80
+"""dance around in your house""",indoor,exercise,daytime,<80
+"""use resistance bands for strength training""",indoor,exercise,daytime,<80
+"""read a book""",indoor,sleep,evening/nighttime,<100
+"""journal your thoughts""",indoor/outdoor,relax,daytime/evening/nighttime,<100
+"""talk to a family member or close friend""",indoor/outdoor,relax,daytime/evening/nighttime,<100
+"""do stretches with a desk or a chair to ease your neck and spine""",indoor,relax,daytime,35-65
+"""perform micro-meditation for 3-5 minutes""",indoor,relax,daytime,35-65
+"""perform eye relaxation exercises""",indoor,relax,daytime,35-65
+"""take a walk break""",indoor,relax,daytime,35-65
+"""try mindful snacking, where you focus on the taste and texture of the chosen snacks"" ",indoor,relax,daytime,35-65
     `
 
     let prompt = '';
